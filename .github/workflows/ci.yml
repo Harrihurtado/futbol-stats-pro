@@ -1,0 +1,53 @@
+name: CI - FutbolStats Pro
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # ✅ ERROR 7 CORREGIDO (parte 1): Servicio PostgreSQL temporal para que
+    # los tests tengan una BD real disponible durante el pipeline
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password123
+          POSTGRES_DB: futbol_db
+        ports:
+          - 5432:5432
+        # Espera a que Postgres esté listo antes de correr los tests
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      # ✅ ERROR 7 CORREGIDO (parte 2): 'npm ci' es el comando correcto para CI
+      # (más rápido y estricto que 'npm install', usa package-lock.json)
+      - name: Instalar dependencias
+        run: npm ci
+
+      # ✅ ERROR 7 CORREGIDO (parte 3): Se inyectan NODE_ENV=test y DATABASE_URL
+      # Sin NODE_ENV=test el guard del test lanza el error de seguridad
+      # DATABASE_URL apunta a localhost porque el servicio de Actions mapea el puerto ahí
+      - name: Correr tests
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://postgres:password123@localhost:5432/futbol_db
+        run: npm test
