@@ -1,0 +1,37 @@
+const request = require('supertest');
+const app = require('../src/app');
+const pool = require('../src/config/db');
+
+beforeAll(async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS equipos (
+      id SERIAL PRIMARY KEY,
+      nombre VARCHAR(50) NOT NULL,
+      puntos INT DEFAULT 0,
+      diferencia_goles INT DEFAULT 0
+    );
+  `);
+  await pool.query("INSERT INTO equipos (nombre, puntos, diferencia_goles) VALUES ('ITP F.C.', 9, 5) ON CONFLICT DO NOTHING;");
+});
+
+afterAll(async () => {
+  await pool.query('DROP TABLE IF EXISTS equipos;');
+  await pool.end();
+});
+
+describe('GET /api/posiciones', () => {
+  it('Debería retornar la lista de equipos ordenada por puntos', async () => {
+
+    // ℹ️ Guard de seguridad: requiere NODE_ENV=test (se inyecta en ci.yml)
+    if (process.env.NODE_ENV !== 'test') {
+      throw new Error('Seguridad: No se pueden correr pruebas en un entorno que no sea de TEST.');
+    }
+
+    const res = await request(app).get('/api/posiciones');
+    // ✅ ERROR 6 CORREGIDO: eliminada la línea con '.colose(200)' que no existe en Jest
+    // y causaba: TypeError: expect(...).colose is not a function
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0].nombre).toBe('ITP F.C.');
+  });
+});
