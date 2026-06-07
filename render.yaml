@@ -22,6 +22,5 @@
 databases:
   - name: futbol-stats-db
     databaseName: futbol_db
-    user: postgres
     region: oregon
     plan: free
