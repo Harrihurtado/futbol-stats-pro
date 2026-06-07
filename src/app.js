@@ -33,6 +33,23 @@ app.get('/api/posiciones', async (req, res) => {
   }
 });
 
+app.post('/api/seed', async (req, res) => {
+  try {
+    await pool.query(`
+      INSERT INTO equipos (nombre, puntos, diferencia_goles) VALUES
+      ('ITP F.C.', 21, 15),
+      ('Atletico Dev', 18, 10),
+      ('Real Bogota', 15, 7),
+      ('Deportivo Node', 12, 3),
+      ('FC Express', 9, -2)
+      ON CONFLICT DO NOTHING;
+    `);
+    res.json({ message: 'Equipos insertados correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV !== 'test') {
   initDB().then(() => {
