@@ -10,8 +10,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # ✅ ERROR 7 CORREGIDO (parte 1): Servicio PostgreSQL temporal para que
-    # los tests tengan una BD real disponible durante el pipeline
+    # ✅ CORRECCIÓN ERROR 6 (CI): Se agregó servicio PostgreSQL temporal para que
+    # los tests tengan una base de datos real disponible durante el pipeline.
     services:
       postgres:
         image: postgres:15-alpine
@@ -21,7 +21,6 @@ jobs:
           POSTGRES_DB: futbol_db
         ports:
           - 5432:5432
-        # Espera a que Postgres esté listo antes de correr los tests
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -38,14 +37,14 @@ jobs:
           node-version: '24'
           cache: 'npm'
 
-      # ✅ ERROR 7 CORREGIDO (parte 2): 'npm ci' es el comando correcto para CI
-      # (más rápido y estricto que 'npm install', usa package-lock.json)
+      # ✅ CORRECCIÓN ERROR 6 (CI): Se cambió 'npm install' por 'npm ci'
+      # que es el comando correcto para entornos de integración continua.
       - name: Instalar dependencias
         run: npm ci
 
-      # ✅ ERROR 7 CORREGIDO (parte 3): Se inyectan NODE_ENV=test y DATABASE_URL
-      # Sin NODE_ENV=test el guard del test lanza el error de seguridad
-      # DATABASE_URL apunta a localhost porque el servicio de Actions mapea el puerto ahí
+      # ✅ CORRECCIÓN ERROR 6 (CI): Se inyectan NODE_ENV=test y DATABASE_URL.
+      # Sin NODE_ENV=test el guard del test lanza error de seguridad.
+      # DATABASE_URL apunta a localhost porque GitHub Actions mapea el puerto ahí.
       - name: Correr tests
         env:
           NODE_ENV: test

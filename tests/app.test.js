@@ -28,7 +28,8 @@ describe('GET /api/posiciones', () => {
     }
 
     const res = await request(app).get('/api/posiciones');
-    // ✅ ERROR 6 CORREGIDO: eliminada la línea con '.colose(200)' que no existe en Jest
+
+    // ✅ CORRECCIÓN ERROR 7: Se eliminó la línea '.colose(200)' que no existe en Jest
     // y causaba: TypeError: expect(...).colose is not a function
     expect(res.statusCode).toEqual(200);
     expect(res.body.length).toBeGreaterThan(0);
